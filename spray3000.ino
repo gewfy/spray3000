@@ -20,25 +20,28 @@ void stopIdle();
 #define SPRAY_PORT 2
 #define FANS_PORT 3
 
-#define NUM_EVENTS 5 // Number of timeline events
-
 typedef void (*EventNameFunc)();
 
 // Event structure
 struct Event {
-  unsigned long startMillis;
+  unsigned long startSeconds;
   EventNameFunc startFunc;
-  unsigned long stopMillis;
+  unsigned long stopSeconds;
   EventNameFunc stopFunc;
   bool isActive;
 };
 
+#define NUM_EVENTS 4 // Number of timeline events <---------------------
+
 // Array of events
-Event events[NUM_EVENTS] = {{0, startWhisk, 20000, stopWhisk, false},
-                            {20000, startPump, 40000, stopPump, false},
-                            {20000, startRotation, 40000, stopRotation, false},
-                            {24000, startSpray, 40000, stopSpray, false},
-                            {40000, startIdle, 18000000, stopIdle, false}};
+Event events[NUM_EVENTS] = {
+    // {0,  startWhisk,    0,      stopWhisk, false},
+    {3, startPump, 15, stopPump, false},
+    {4, startRotation, 50, stopRotation, false},
+    {4, startSpray, 15, stopSpray, false},
+    {40, startIdle, 5 * 60 * 60, stopIdle,
+     false} // 5 hours * 60 minutes * 60 seconds
+};
 
 unsigned long cycleStartTime = 0; // Start time of the current cycle (relative)
 
@@ -74,13 +77,8 @@ void setup() {
 }
 
 void loop() {
-  if (!digitalRead(button)) {
-    startPump();
-  } else if (!events[1].isActive) {
-    stopPump();
-  }
-
-  unsigned long currentTime = millis(); // Get the current time in milliseconds
+  unsigned long currentTime =
+      millis() / 1000; // Get the current time in milliseconds
 
   // Calculate the relative time in the current cycle
   unsigned long relativeTime = (currentTime - cycleStartTime);
@@ -88,21 +86,21 @@ void loop() {
   // Check each event for start and stop conditions
   for (int i = 0; i < NUM_EVENTS; i++) {
     // Check if event should start
-    if (!events[i].isActive && relativeTime >= events[i].startMillis &&
-        relativeTime < events[i].stopMillis) {
+    if (!events[i].isActive && relativeTime >= events[i].startSeconds &&
+        relativeTime < events[i].stopSeconds) {
       events[i].isActive = true; // Mark event as active
       events[i].startFunc();     // Trigger start event
     }
 
     // Check if event should stop
-    if (events[i].isActive && relativeTime >= events[i].stopMillis) {
+    if (events[i].isActive && relativeTime >= events[i].stopSeconds) {
       events[i].isActive = false; // Mark event as inactive
       events[i].stopFunc();       // Trigger stop event
     }
   }
 
   // If the cycle has ended, restart the timeline
-  unsigned long timelineEnd = events[NUM_EVENTS - 1].stopMillis;
+  unsigned long timelineEnd = events[NUM_EVENTS - 1].stopSeconds;
   if (relativeTime >= timelineEnd) {
     Serial.println("Restarting timeline...");
     cycleStartTime = currentTime; // Reset the cycle start time
