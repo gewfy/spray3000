@@ -5,8 +5,16 @@ void startFans();
 void stopFans();
 void startPump();
 void stopPump();
-void startSpray();
-void stopSpray();
+void startAlert();
+void stopAlert();
+void startSpray1();
+void stopSpray1();
+void startSpray2();
+void stopSpray2();
+void startSpray3();
+void stopSpray3();
+void startSpray4();
+void stopSpray4();
 void startRotation();
 void stopRotation();
 void startWhisk();
@@ -16,9 +24,13 @@ void stopIdle();
 
 // Port definitions
 #define WHISK_PORT 0
-#define PUMP_PORT 1
-#define SPRAY_PORT 2
-#define FANS_PORT 3
+#define ALERT_PORT 1
+#define PUMP_PORT 2
+#define SPRAY1_PORT 3
+#define SPRAY2_PORT 4
+#define FANS_PORT 5
+#define SPRAY3_PORT 6
+#define SPRAY4_PORT 7
 
 typedef void (*EventNameFunc)();
 
@@ -31,16 +43,48 @@ struct Event {
   bool isActive;
 };
 
-#define NUM_EVENTS 4 // Number of timeline events <---------------------
+#define NUM_EVENTS 20 // Number of timeline events <---------------------
 
 // Array of events
 Event events[NUM_EVENTS] = {
-    // {0,  startWhisk,    0,      stopWhisk, false},
-    {3, startPump, 15, stopPump, false},
-    {4, startRotation, 50, stopRotation, false},
-    {4, startSpray, 15, stopSpray, false},
-    {40, startIdle, 5 * 60 * 60, stopIdle,
-     false} // 5 hours * 60 minutes * 60 seconds
+    {0, startAlert, 20, stopAlert, false},
+    {5, startPump, 5 + 12, stopPump, false},
+    {5, startSpray1, 5 + 12, stopSpray1, false},
+    {5, startRotation, 5 + 15, stopRotation, false},
+
+    {20, startIdle, 20 + 120, stopIdle, false},
+
+    {135, startAlert, 140 + 15, stopAlert, false},
+    {140, startPump, 140 + 12, stopPump, false},
+    {140, startSpray2, 140 + 12, stopSpray2, false},
+    {140, startRotation, 140 + 15, stopRotation, false},
+
+    {155, startIdle, 155 + 120, stopIdle, false},
+
+    {270, startAlert, 270 + 15, stopAlert, false},
+    {275, startPump, 275 + 12, stopPump, false},
+    {275, startSpray3, 275 + 12, stopSpray3, false},
+    {275, startRotation, 275 + 15, stopRotation, false},
+
+    {290, startIdle, 290 + 120, stopIdle, false},
+
+    {405, startAlert, 410 + 15, stopAlert, false},
+    {410, startPump, 410 + 12, stopPump, false},
+    {410, startSpray4, 410 + 12, stopSpray4, false},
+    {410, startRotation, 410 + 15, stopRotation, false},
+
+    {425, startIdle, 5 * 60 * 60, stopIdle, false},
+
+    /*
+
+        {2, startSpray2, 3, stopSpray2, false},
+        {3, startSpray3, 4, stopSpray3, false},
+        {4, startSpray4, 5, stopSpray4, false},
+        {6, startSpray1, 7, stopSpray1, false},
+        {6, startSpray2, 7, stopSpray2, false},
+        {6, startSpray3, 7, stopSpray3, false},
+        {6, startSpray4, 7, stopSpray4, false},
+        */
 };
 
 unsigned long cycleStartTime = 0; // Start time of the current cycle (relative)
@@ -71,9 +115,6 @@ void setup() {
   stepper.setAcceleration(200);
 
   stopAll();
-  digitalWrite(13, true);
-  delay(1000);
-  digitalWrite(13, false);
 }
 
 void loop() {
@@ -120,8 +161,20 @@ void stopFans() { disablePort(FANS_PORT); }
 void startPump() { enablePort(PUMP_PORT); }
 void stopPump() { disablePort(PUMP_PORT); }
 
-void startSpray() { enablePort(SPRAY_PORT); }
-void stopSpray() { disablePort(SPRAY_PORT); }
+void startAlert() { enablePort(ALERT_PORT); }
+void stopAlert() { disablePort(ALERT_PORT); }
+
+void startSpray1() { enablePort(SPRAY1_PORT); }
+void stopSpray1() { disablePort(SPRAY1_PORT); }
+
+void startSpray2() { enablePort(SPRAY2_PORT); }
+void stopSpray2() { disablePort(SPRAY2_PORT); }
+
+void startSpray3() { enablePort(SPRAY3_PORT); }
+void stopSpray3() { disablePort(SPRAY3_PORT); }
+
+void startSpray4() { enablePort(SPRAY4_PORT); }
+void stopSpray4() { disablePort(SPRAY4_PORT); }
 
 void startRotation() { stepper.moveTo(8000); }
 void stopRotation() { stepper.setCurrentPosition(0); }
